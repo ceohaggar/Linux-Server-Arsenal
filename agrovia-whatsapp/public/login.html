@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agrovia - Connexion</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="login-page">
+  <div class="login-card">
+    <div class="brand">
+      <div class="brand-mark">A</div>
+      <h1>Agrovia</h1>
+      <p>Plateforme WhatsApp Business</p>
+    </div>
+    <form id="login-form">
+      <input type="password" id="password" placeholder="Mot de passe administrateur" autocomplete="current-password" required>
+      <button type="submit">Se connecter</button>
+      <p id="login-error" class="error hidden">Mot de passe incorrect</p>
+    </form>
+  </div>
+  <script>
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: document.getElementById('password').value }),
+      });
+      if (res.ok) { window.location.href = '/'; }
+      else { document.getElementById('login-error').classList.remove('hidden'); }
+    });
+  </script>
+</body>
+</html>

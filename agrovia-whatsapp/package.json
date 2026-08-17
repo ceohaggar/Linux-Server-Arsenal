@@ -1,0 +1,21 @@
+{
+  "name": "agrovia-whatsapp",
+  "version": "0.1.0",
+  "description": "Plateforme WhatsApp Business (Cloud API) pour Agrovia : chatbot de commande, boite de reception multi-agents, campagnes de diffusion.",
+  "main": "src/server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.8.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "express-session": "^1.18.0"
+  },
+  "license": "MIT"
+}

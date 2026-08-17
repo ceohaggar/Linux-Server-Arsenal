@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agrovia - WhatsApp Business</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand-row">
+        <div class="brand-mark">A</div>
+        <div>
+          <strong>Agrovia</strong>
+          <small>WhatsApp Business</small>
+        </div>
+      </div>
+      <nav>
+        <button class="nav-btn active" data-view="overview">Tableau de bord</button>
+        <button class="nav-btn" data-view="conversations">Conversations</button>
+        <button class="nav-btn" data-view="orders">Commandes</button>
+        <button class="nav-btn" data-view="campaigns">Campagnes</button>
+        <button class="nav-btn" data-view="contacts">Contacts</button>
+        <button class="nav-btn" data-view="products">Produits</button>
+      </nav>
+      <div class="sidebar-footer">
+        <span id="sim-badge" class="badge hidden">MODE SIMULATION</span>
+        <button id="logout-btn" class="ghost">Deconnexion</button>
+      </div>
+    </aside>
+    <main id="main-content"></main>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
