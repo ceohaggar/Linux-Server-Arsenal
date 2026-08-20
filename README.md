@@ -34,6 +34,7 @@ The `linservarsenal.sh` script provides an interactive terminal menu for managin
 ### DNS and DHCP
 
 - **Auto DNS**: Set up a DNS caching server using `dnsmasq` or a full DNS server using `bind9`.
+- **Auto Unbound**: Install and configure `unbound` as a validating, recursive, and caching DNS resolver.
 - **Auto DHCP**: Install and configure a DHCP server using `isc-dhcp-server`.
 
 ### Monitoring and Backup

@@ -94,8 +94,9 @@ display_menu() {
         22 "Configure Static IP"
         23 "System Monitoring"
         24 "Configure UFW Firewall"
-        25 "Manage Users"
-        26 "Exit"
+        25 "Install Unbound DNS Resolver"
+        26 "Manage Users"
+        27 "Exit"
     )
 
     # Use dialog or whiptail depending on availability
@@ -144,8 +145,9 @@ run_script() {
         22) bash ./assets/static-ip.sh ;;
         23) bash ./assets/system-mon.sh ;;
         24) bash ./assets/ufw.sh ;;
-        25) bash ./assets/user.sh ;;
-        26) exit 0 ;;
+        25) bash ./assets/unbound.sh ;;
+        26) bash ./assets/user.sh ;;
+        27) exit 0 ;;
         *) echo "Invalid choice!" ;;
     esac
 }
