@@ -33,7 +33,7 @@ The `linservarsenal.sh` script provides an interactive terminal menu for managin
 
 ### DNS and DHCP
 
-- **Auto DNS**: Set up a DNS caching server using `dnsmasq` or a full DNS server using `bind9`.
+- **Auto DNS**: Set up a DNS caching server using `dnsmasq`, a full DNS server using `bind9`, or a recursive/caching DNS resolver using `unbound` (run it on two machines for a redundant setup).
 - **Auto DHCP**: Install and configure a DHCP server using `isc-dhcp-server`.
 
 ### Monitoring and Backup
