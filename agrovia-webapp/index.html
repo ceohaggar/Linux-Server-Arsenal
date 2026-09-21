@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AGROVIA — Gestion Stock &amp; Ventes PVC</title>
+<style>
+  :root {
+    --green-dark: #1e7a34;
+    --green: #2e9e46;
+    --green-light: #e8f5ec;
+    --blue-dark: #1246a0;
+    --blue: #1e5fd0;
+    --blue-light: #e9f0fd;
+    --red: #c62828;
+    --red-light: #fdecea;
+    --amber: #e59a00;
+    --amber-light: #fdf3dd;
+    --ink: #1c2430;
+    --muted: #64707f;
+    --line: #dde3ea;
+    --bg: #f4f6f9;
+    --card: #ffffff;
+    --radius: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+  }
+  .container { max-width: 1240px; margin: 0 auto; padding: 24px 20px 60px; }
+
+  /* ---------- En-tête entreprise ---------- */
+  header.brand {
+    background: linear-gradient(120deg, var(--green-dark), var(--green) 60%, #4db264);
+    color: #fff;
+    border-radius: var(--radius);
+    padding: 26px 28px;
+    margin-bottom: 22px;
+    box-shadow: 0 6px 18px rgba(30, 122, 52, .25);
+  }
+  header.brand h1 { font-size: 26px; letter-spacing: .3px; display: flex; align-items: center; gap: 10px; }
+  header.brand .tagline { margin-top: 6px; font-size: 14px; opacity: .95; font-style: italic; }
+  header.brand .contacts {
+    margin-top: 14px; display: flex; flex-wrap: wrap; gap: 8px 22px;
+    font-size: 12.5px; opacity: .92;
+  }
+
+  /* ---------- Cartes indicateurs ---------- */
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 22px; }
+  .kpi {
+    background: var(--card); border-radius: var(--radius); padding: 16px 18px;
+    border: 1px solid var(--line); box-shadow: 0 2px 6px rgba(20,30,45,.05);
+  }
+  .kpi .label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .6px; }
+  .kpi .value { font-size: 24px; font-weight: 700; margin-top: 6px; }
+  .kpi .sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .kpi.green .value { color: var(--green-dark); }
+  .kpi.blue .value { color: var(--blue-dark); }
+  .kpi.red .value { color: var(--red); }
+
+  /* ---------- Sections ---------- */
+  section.panel {
+    background: var(--card); border-radius: var(--radius); border: 1px solid var(--line);
+    box-shadow: 0 2px 8px rgba(20,30,45,.06); margin-bottom: 24px; overflow: hidden;
+  }
+  .panel-head {
+    padding: 14px 20px; font-weight: 700; font-size: 15px; color: #fff;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  }
+  .panel-head.green { background: linear-gradient(90deg, var(--green-dark), var(--green)); }
+  .panel-head.blue { background: linear-gradient(90deg, var(--blue-dark), var(--blue)); }
+  .panel-body { padding: 0; overflow-x: auto; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; min-width: 860px; }
+  thead th {
+    background: #f0f3f7; color: #334; font-size: 12px; text-transform: uppercase;
+    letter-spacing: .4px; padding: 10px 12px; border-bottom: 2px solid var(--line); text-align: left; white-space: nowrap;
+  }
+  tbody td { padding: 10px 12px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  tbody tr:hover { background: #f8fafc; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  tfoot td { padding: 12px; font-weight: 700; background: var(--green-light); border-top: 2px solid var(--green); }
+
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+  .badge.ok { background: var(--green-light); color: var(--green-dark); }
+  .badge.warn { background: var(--amber-light); color: var(--amber); }
+  .badge.ko { background: var(--red-light); color: var(--red); }
+  .badge.info { background: var(--blue-light); color: var(--blue-dark); }
+  .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; vertical-align: 1px; }
+  .dot.g { background: #2e9e46; } .dot.a { background: #e59a00; } .dot.r { background: #c62828; }
+
+  .bar { background: #edf1f5; border-radius: 8px; height: 8px; width: 110px; display: inline-block; vertical-align: middle; overflow: hidden; }
+  .bar > i { display: block; height: 100%; background: linear-gradient(90deg, var(--green), var(--green-dark)); border-radius: 8px; }
+
+  /* ---------- Formulaire ---------- */
+  form.sale-form {
+    display: grid; gap: 12px; padding: 18px 20px; background: #fbfcfe; border-bottom: 1px solid var(--line);
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+  form.sale-form .field { display: flex; flex-direction: column; gap: 5px; }
+  form.sale-form label { font-size: 11.5px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; }
+  form.sale-form input, form.sale-form select {
+    padding: 9px 10px; border: 1px solid var(--line); border-radius: 8px; font-size: 13.5px;
+    background: #fff; color: var(--ink); outline: none; transition: border .15s, box-shadow .15s;
+  }
+  form.sale-form input:focus, form.sale-form select:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(30,95,208,.12); }
+  form.sale-form .actions { display: flex; align-items: flex-end; }
+
+  button {
+    border: none; border-radius: 8px; padding: 10px 16px; font-size: 13.5px; font-weight: 600;
+    cursor: pointer; transition: filter .15s, transform .05s;
+  }
+  button:active { transform: translateY(1px); }
+  button.primary { background: var(--blue); color: #fff; width: 100%; }
+  button.primary:hover { filter: brightness(1.08); }
+  button.ghost {
+    background: rgba(255,255,255,.16); color: #fff; border: 1px solid rgba(255,255,255,.45);
+    padding: 7px 13px; font-size: 12.5px;
+  }
+  button.ghost:hover { background: rgba(255,255,255,.28); }
+  .row-btn {
+    padding: 5px 10px; font-size: 12px; border-radius: 6px; margin-right: 4px;
+  }
+  .row-btn.validate { background: var(--green-light); color: var(--green-dark); }
+  .row-btn.invalidate { background: var(--amber-light); color: var(--amber); }
+  .row-btn.delete { background: var(--red-light); color: var(--red); }
+  .row-btn:hover { filter: brightness(.96); }
+
+  .hint { font-size: 12px; color: var(--muted); padding: 10px 20px 16px; }
+  .empty { text-align: center; padding: 26px; color: var(--muted); font-style: italic; }
+
+  footer.page { text-align: center; color: var(--muted); font-size: 12px; margin-top: 10px; }
+
+  @media (max-width: 640px) {
+    header.brand h1 { font-size: 20px; }
+    .kpi .value { font-size: 20px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header class="brand">
+    <h1>🌱 AGROVIA — IRRIGATION GOUTTE À GOUTTE</h1>
+    <div class="tagline">Spécialiste des systèmes d’irrigation &amp; Matériels agricoles | Tuyaux PVC Pression</div>
+    <div class="contacts">
+      <span>📞 +237 / +225 / +221 XX XX XX XX</span>
+      <span>✉️ contact@agrovia-irrigation.com</span>
+      <span>🌐 www.agrovia-irrigation.com</span>
+      <span>📍 Siège : Zone Agro-Industrielle</span>
+      <span>💱 Devise : Franc CFA (XAF)</span>
+      <span>🏛️ N° RCCM / NIF : Agréé</span>
+    </div>
+  </header>
+
+  <div class="kpis" id="kpis"></div>
+
+  <!-- ================= STOCKS ================= -->
+  <section class="panel">
+    <div class="panel-head green">
+      <span>📊 ÉTAT ET SUIVI DES STOCKS PVC EN TEMPS RÉEL (INITIAL : 5 000 UNITÉS)</span>
+    </div>
+    <div class="panel-body">
+      <table id="stock-table">
+        <thead>
+          <tr>
+            <th>Code Article</th>
+            <th>Désignation Produit</th>
+            <th>Diamètre</th>
+            <th>Pression / Norme</th>
+            <th class="num">Stock Initial</th>
+            <th class="num">Total Vendu (Validé)</th>
+            <th class="num">Stock Restant</th>
+            <th class="num">Taux Sortie</th>
+            <th>Progression</th>
+            <th>Statut Stock</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+        <tfoot></tfoot>
+      </table>
+    </div>
+    <div class="hint">
+      Seules les ventes dont le règlement est <b>Validé</b> sont déduites du stock.
+      Statut : <span class="dot g"></span>Normal (&gt; 25 % restant) · <span class="dot a"></span>Alerte (≤ 25 %) · <span class="dot r"></span>Rupture (0).
+    </div>
+  </section>
+
+  <!-- ================= VENTES ================= -->
+  <section class="panel">
+    <div class="panel-head blue">
+      <span>🧾 JOURNAL DES VENTES, FACTURATION &amp; BORDEREAUX DE BANQUE</span>
+      <span>
+        <button class="ghost" id="btn-export">⬇ Exporter CSV</button>
+        <button class="ghost" id="btn-reset">↺ Réinitialiser (données démo)</button>
+      </span>
+    </div>
+
+    <form class="sale-form" id="sale-form">
+      <div class="field">
+        <label for="f-date">Date vente</label>
+        <input type="date" id="f-date" required>
+      </div>
+      <div class="field">
+        <label for="f-diam">Diamètre tuyau</label>
+        <select id="f-diam" required></select>
+      </div>
+      <div class="field" style="grid-column: span 2; min-width: 220px;">
+        <label for="f-client">Client / Raison sociale</label>
+        <input type="text" id="f-client" placeholder="Ex : Domaine Agricole Souss SA" required>
+      </div>
+      <div class="field">
+        <label for="f-qty">Qté sortie (unités)</label>
+        <input type="number" id="f-qty" min="1" step="1" placeholder="0" required>
+      </div>
+      <div class="field">
+        <label for="f-price">Prix unit. (XAF)</label>
+        <input type="number" id="f-price" min="0" step="50" required>
+      </div>
+      <div class="field">
+        <label for="f-bord">N° bordereau banque</label>
+        <input type="text" id="f-bord" placeholder="Ex : BOR-BMCE-774102" required>
+      </div>
+      <div class="field">
+        <label for="f-statut">Statut règlement</label>
+        <select id="f-statut">
+          <option value="valide">Validé</option>
+          <option value="non-valide" selected>Non validé</option>
+        </select>
+      </div>
+      <div class="actions">
+        <button type="submit" class="primary">+ Enregistrer la vente</button>
+      </div>
+    </form>
+
+    <div class="panel-body">
+      <table id="sales-table">
+        <thead>
+          <tr>
+            <th>Date Vente</th>
+            <th>N° Facture</th>
+            <th>Diamètre</th>
+            <th>Client / Raison Sociale</th>
+            <th class="num">Qté Sortie</th>
+            <th class="num">Prix Unit. (XAF)</th>
+            <th class="num">Total TTC (XAF)</th>
+            <th>N° Bordereau Banque</th>
+            <th>Statut Règlement</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+        <tfoot></tfoot>
+      </table>
+    </div>
+    <div class="hint">
+      Le n° de facture est généré automatiquement (FAC-ANNÉE-XXXX). Le prix unitaire est pré-rempli selon le diamètre choisi et reste modifiable.
+      Les données sont sauvegardées localement dans votre navigateur.
+    </div>
+  </section>
+
+  <footer class="page">Gestion_Stock_Agrovia — application web générée à partir du classeur Excel.</footer>
+</div>
+
+<script>
+"use strict";
+
+/* ================= Référentiel produits ================= */
+const PRODUCTS = [
+  { code: "PVC-090", designation: "Tuyau PVC Pression", diametre: "Ø 90 mm", norme: "PN 6 Bar / ISO", stockInitial: 1250, prix: 18500 },
+  { code: "PVC-075", designation: "Tuyau PVC Pression", diametre: "Ø 75 mm", norme: "PN 6 Bar / ISO", stockInitial: 1250, prix: 14000 },
+  { code: "PVC-063", designation: "Tuyau PVC Pression", diametre: "Ø 63 mm", norme: "PN 6 Bar / ISO", stockInitial: 1250, prix: 11500 },
+  { code: "PVC-050", designation: "Tuyau PVC Pression", diametre: "Ø 50 mm", norme: "PN 6 Bar / ISO", stockInitial: 1250, prix: 8500 },
+];
+const byCode = Object.fromEntries(PRODUCTS.map(p => [p.code, p]));
+
+/* Données de démonstration issues du classeur d'origine */
+const DEMO_SALES = [
+  { date: "2026-09-02", facture: "FAC-2026-0101", code: "PVC-090", client: "Domaine Agricole Souss SA",      qte: 0, prix: 18500, bordereau: "BOR-BMCE-774102", statut: "valide" },
+  { date: "2026-09-05", facture: "FAC-2026-0102", code: "PVC-075", client: "Ferme Maraîchère El Baraka",     qte: 0, prix: 14000, bordereau: "BOR-BP-998241",   statut: "valide" },
+  { date: "2026-09-08", facture: "FAC-2026-0103", code: "PVC-063", client: "Sté Arrosage & Goutte Moderne",  qte: 0, prix: 11500, bordereau: "BOR-ATW-331045",  statut: "valide" },
+  { date: "2026-09-12", facture: "FAC-2026-0104", code: "PVC-050", client: "Coopérative Agricole Atlas",     qte: 0, prix: 8500,  bordereau: "BOR-CIH-556120",  statut: "non-valide" },
+  { date: "2026-09-15", facture: "FAC-2026-0105", code: "PVC-090", client: "Agri-Solutions Chtouka",         qte: 0, prix: 18500, bordereau: "BOR-BMCE-774189", statut: "non-valide" },
+  { date: "2026-09-18", facture: "FAC-2026-0106", code: "PVC-075", client: "Domaine El Majd",                qte: 0, prix: 14000, bordereau: "BOR-BP-998310",   statut: "non-valide" },
+];
+
+/* ================= Persistance ================= */
+const STORE_KEY = "agrovia_sales_v1";
+let sales = load();
+
+function load() {
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (e) { /* stockage indisponible : on repart des données démo */ }
+  return structuredClone(DEMO_SALES);
+}
+function save() {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(sales)); } catch (e) { /* mode sans persistance */ }
+}
+
+/* ================= Utilitaires ================= */
+const fmtInt = new Intl.NumberFormat("fr-FR");
+const xaf = n => fmtInt.format(Math.round(n)) + " XAF";
+const units = n => fmtInt.format(n) + " unités";
+const pct = x => (x * 100).toFixed(2).replace(".", ",") + " %";
+
+function nextInvoiceNumber() {
+  const year = new Date().getFullYear();
+  let max = 100; // la numérotation démarre à 0101
+  for (const s of sales) {
+    const m = /^FAC-(\d{4})-(\d+)$/.exec(s.facture);
+    if (m && Number(m[1]) === year) max = Math.max(max, Number(m[2]));
+  }
+  return `FAC-${year}-${String(max + 1).padStart(4, "0")}`;
+}
+
+function soldByCode() {
+  const sold = Object.fromEntries(PRODUCTS.map(p => [p.code, 0]));
+  for (const s of sales) if (s.statut === "valide") sold[s.code] += Number(s.qte) || 0;
+  return sold;
+}
+
+function stockStatus(restant, initial) {
+  if (restant <= 0) return { cls: "ko", dot: "r", label: "Rupture" };
+  if (restant / initial <= 0.25) return { cls: "warn", dot: "a", label: "Alerte" };
+  return { cls: "ok", dot: "g", label: "Normal" };
+}
+
+/* ================= Rendu : indicateurs ================= */
+function renderKpis() {
+  const sold = soldByCode();
+  const totalInitial = PRODUCTS.reduce((a, p) => a + p.stockInitial, 0);
+  const totalSold = Object.values(sold).reduce((a, b) => a + b, 0);
+  const caValide = sales.filter(s => s.statut === "valide").reduce((a, s) => a + s.qte * s.prix, 0);
+  const caAttente = sales.filter(s => s.statut !== "valide").reduce((a, s) => a + s.qte * s.prix, 0);
+
+  document.getElementById("kpis").innerHTML = `
+    <div class="kpi green"><div class="label">Stock restant</div><div class="value">${fmtInt.format(totalInitial - totalSold)}</div><div class="sub">sur ${fmtInt.format(totalInitial)} unités</div></div>
+    <div class="kpi blue"><div class="label">Unités vendues (validées)</div><div class="value">${fmtInt.format(totalSold)}</div><div class="sub">taux de sortie ${pct(totalSold / totalInitial)}</div></div>
+    <div class="kpi green"><div class="label">Chiffre d'affaires encaissé</div><div class="value">${xaf(caValide)}</div><div class="sub">${sales.filter(s => s.statut === "valide").length} facture(s) validée(s)</div></div>
+    <div class="kpi red"><div class="label">En attente de règlement</div><div class="value">${xaf(caAttente)}</div><div class="sub">${sales.filter(s => s.statut !== "valide").length} facture(s) non validée(s)</div></div>
+  `;
+}
+
+/* ================= Rendu : stocks ================= */
+function renderStock() {
+  const sold = soldByCode();
+  const tbody = document.querySelector("#stock-table tbody");
+  const tfoot = document.querySelector("#stock-table tfoot");
+
+  tbody.innerHTML = PRODUCTS.map(p => {
+    const vendu = sold[p.code];
+    const restant = Math.max(0, p.stockInitial - vendu);
+    const taux = vendu / p.stockInitial;
+    const st = stockStatus(restant, p.stockInitial);
+    return `<tr>
+      <td><b>${p.code}</b></td>
+      <td>${p.designation}</td>
+      <td>${p.diametre}</td>
+      <td>${p.norme}</td>
+      <td class="num">${units(p.stockInitial)}</td>
+      <td class="num">${units(vendu)}</td>
+      <td class="num"><b>${units(restant)}</b></td>
+      <td class="num">${pct(taux)}</td>
+      <td><span class="bar"><i style="width:${Math.min(100, taux * 100)}%"></i></span></td>
+      <td><span class="badge ${st.cls}"><span class="dot ${st.dot}"></span>${st.label}</span></td>
+    </tr>`;
+  }).join("");
+
+  const totalInitial = PRODUCTS.reduce((a, p) => a + p.stockInitial, 0);
+  const totalSold = Object.values(sold).reduce((a, b) => a + b, 0);
+  tfoot.innerHTML = `<tr>
+    <td colspan="4">TOTAL GÉNÉRAL STOCKS</td>
+    <td class="num">${units(totalInitial)}</td>
+    <td class="num">${units(totalSold)}</td>
+    <td class="num">${units(totalInitial - totalSold)}</td>
+    <td class="num">${pct(totalSold / totalInitial)}</td>
+    <td colspan="2"></td>
+  </tr>`;
+}
+
+/* ================= Rendu : ventes ================= */
+function renderSales() {
+  const tbody = document.querySelector("#sales-table tbody");
+  const tfoot = document.querySelector("#sales-table tfoot");
+
+  if (!sales.length) {
+    tbody.innerHTML = `<tr><td colspan="10" class="empty">Aucune vente enregistrée pour le moment.</td></tr>`;
+    tfoot.innerHTML = "";
+    return;
+  }
+
+  tbody.innerHTML = sales.map((s, i) => {
+    const p = byCode[s.code];
+    const total = s.qte * s.prix;
+    const isOk = s.statut === "valide";
+    return `<tr>
+      <td>${s.date}</td>
+      <td><b>${s.facture}</b></td>
+      <td>${p ? p.diametre : s.code}</td>
+      <td>${escapeHtml(s.client)}</td>
+      <td class="num">${fmtInt.format(s.qte)} u.</td>
+      <td class="num">${xaf(s.prix)}</td>
+      <td class="num"><b>${xaf(total)}</b></td>
+      <td><span class="badge info">${escapeHtml(s.bordereau)}</span></td>
+      <td><span class="badge ${isOk ? "ok" : "ko"}">${isOk ? "Validé" : "Non validé"}</span></td>
+      <td>
+        <button class="row-btn ${isOk ? "invalidate" : "validate"}" data-action="toggle" data-index="${i}">${isOk ? "Annuler" : "Valider"}</button>
+        <button class="row-btn delete" data-action="delete" data-index="${i}">Suppr.</button>
+      </td>
+    </tr>`;
+  }).join("");
+
+  const totalTTC = sales.reduce((a, s) => a + s.qte * s.prix, 0);
+  const totalQte = sales.reduce((a, s) => a + Number(s.qte), 0);
+  tfoot.innerHTML = `<tr>
+    <td colspan="4">TOTAL JOURNAL (${sales.length} vente(s))</td>
+    <td class="num">${fmtInt.format(totalQte)} u.</td>
+    <td></td>
+    <td class="num">${xaf(totalTTC)}</td>
+    <td colspan="3"></td>
+  </tr>`;
+}
+
+function escapeHtml(str) {
+  return String(str).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+function renderAll() {
+  renderKpis();
+  renderStock();
+  renderSales();
+}
+
+/* ================= Formulaire ================= */
+const form = document.getElementById("sale-form");
+const fDiam = document.getElementById("f-diam");
+const fPrice = document.getElementById("f-price");
+
+fDiam.innerHTML = PRODUCTS.map(p => `<option value="${p.code}">${p.diametre} — ${p.code}</option>`).join("");
+fDiam.addEventListener("change", () => { fPrice.value = byCode[fDiam.value].prix; });
+fPrice.value = PRODUCTS[0].prix;
+document.getElementById("f-date").value = new Date().toISOString().slice(0, 10);
+
+form.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const code = fDiam.value;
+  const qte = Number(document.getElementById("f-qty").value);
+  const statut = document.getElementById("f-statut").value;
+
+  if (statut === "valide") {
+    const restant = byCode[code].stockInitial - soldByCode()[code];
+    if (qte > restant) {
+      alert(`Stock insuffisant pour ${byCode[code].diametre} : il reste ${fmtInt.format(restant)} unités.`);
+      return;
+    }
+  }
+
+  sales.push({
+    date: document.getElementById("f-date").value,
+    facture: nextInvoiceNumber(),
+    code,
+    client: document.getElementById("f-client").value.trim(),
+    qte,
+    prix: Number(fPrice.value),
+    bordereau: document.getElementById("f-bord").value.trim(),
+    statut,
+  });
+  save();
+  renderAll();
+
+  form.reset();
+  document.getElementById("f-date").value = new Date().toISOString().slice(0, 10);
+  fPrice.value = byCode[fDiam.value].prix;
+});
+
+/* ================= Actions sur les lignes ================= */
+document.querySelector("#sales-table tbody").addEventListener("click", (e) => {
+  const btn = e.target.closest("button[data-action]");
+  if (!btn) return;
+  const i = Number(btn.dataset.index);
+  const s = sales[i];
+
+  if (btn.dataset.action === "delete") {
+    if (!confirm(`Supprimer la facture ${s.facture} (${s.client}) ?`)) return;
+    sales.splice(i, 1);
+  } else {
+    if (s.statut !== "valide") {
+      const restant = byCode[s.code].stockInitial - soldByCode()[s.code];
+      if (s.qte > restant) {
+        alert(`Impossible de valider : il ne reste que ${fmtInt.format(restant)} unités pour ${byCode[s.code].diametre}.`);
+        return;
+      }
+      s.statut = "valide";
+    } else {
+      s.statut = "non-valide";
+    }
+  }
+  save();
+  renderAll();
+});
+
+/* ================= Export CSV & réinitialisation ================= */
+document.getElementById("btn-export").addEventListener("click", () => {
+  const header = ["Date Vente", "N° Facture", "Diamètre", "Client / Raison Sociale", "Qté Sortie", "Prix Unit. (XAF)", "Total TTC (XAF)", "N° Bordereau Banque", "Statut Règlement"];
+  const rows = sales.map(s => [
+    s.date, s.facture, byCode[s.code]?.diametre ?? s.code, s.client,
+    s.qte, s.prix, s.qte * s.prix, s.bordereau, s.statut === "valide" ? "Validé" : "Non validé",
+  ]);
+  const csv = [header, ...rows]
+    .map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(";"))
+    .join("\r\n");
+  const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "journal_ventes_agrovia.csv";
+  a.click();
+  URL.revokeObjectURL(a.href);
+});
+
+document.getElementById("btn-reset").addEventListener("click", () => {
+  if (!confirm("Réinitialiser le journal avec les données de démonstration du classeur ? Les ventes saisies seront perdues.")) return;
+  sales = structuredClone(DEMO_SALES);
+  save();
+  renderAll();
+});
+
+renderAll();
+</script>
+</body>
+</html>
